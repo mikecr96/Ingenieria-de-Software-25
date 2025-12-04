@@ -1,0 +1,1 @@
+Para visualizar las presentaciones HTML, simplemente descarga los archivos y ábrelos en tu navegador web preferido. 

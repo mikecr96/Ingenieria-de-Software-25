@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tipos de Testing - Ingeniería de Software</title>
+    <style>
+        :root {
+            --color-primary: #60a5fa;
+            --color-accent: #f97316;
+            --color-bg: #0F172A;
+            --color-surface: #1E293B;
+            --color-text: #F1F5F9;
+            --color-text-muted: #94A3B8;
+            --color-success: #10B981;
+            --color-warning: #F59E0B;
+            --color-error: #EF4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f4c7a 100%);
+            color: var(--color-text);
+            overflow: hidden;
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            background: var(--color-surface);
+        }
+
+        .slide.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .slide-header {
+            flex-shrink: 0;
+            padding: 40px 60px 25px;
+        }
+
+        .slide-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin: 0;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--color-accent);
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .slide-content {
+            flex: 1;
+            padding: 25px 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            font-size: 1rem;
+            line-height: 1.7;
+            overflow-y: auto;
+        }
+
+        .slide-footer {
+            flex-shrink: 0;
+            padding: 25px 60px;
+            border-top: 1px solid rgba(96, 165, 250, 0.2);
+            background: rgba(15, 23, 42, 0.95);
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 12px 24px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: var(--color-accent);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            background: #2563eb;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .cover-slide {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .cover-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #60a5fa, var(--color-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .cover-subtitle {
+            font-size: 1.8rem;
+            color: var(--color-text-muted);
+        }
+
+        .definition {
+            background: rgba(30, 41, 59, 0.8);
+            border-left: 4px solid var(--color-accent);
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin: 0;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.6);
+            padding: 15px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(96, 165, 250, 0.2);
+        }
+
+        .card h3 {
+            color: var(--color-accent);
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            margin: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: var(--color-accent);
+            font-weight: bold;
+        }
+
+        .highlight {
+            color: var(--color-accent);
+            font-weight: 600;
+        }
+
+        h3 {
+            color: var(--color-primary);
+            margin: 10px 0 8px 0;
+            font-size: 1.2rem;
+        }
+
+        .emoji {
+            font-size: 1.8rem;
+        }
+
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--color-accent);
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+
+        strong {
+            color: var(--color-primary);
+        }
+
+        .intro-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .type-list {
+            background: rgba(30, 41, 59, 0.6);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(96, 165, 250, 0.2);
+        }
+
+        .type-list h3 {
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .summary-card {
+            background: rgba(30, 41, 59, 0.8);
+            padding: 12px 15px;
+            border-radius: 6px;
+            border-left: 3px solid var(--color-accent);
+            font-size: 0.9rem;
+        }
+
+        .summary-card strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 1366px) {
+            .slide-header {
+                padding: 30px 40px 20px;
+            }
+            .slide-content {
+                padding: 20px 40px;
+                font-size: 0.95rem;
+            }
+            .slide-footer {
+                padding: 20px 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <div class="progress-bar" id="progressBar"></div>
+
+        <!-- Slide 1: Portada -->
+        <div class="slide active cover-slide">
+            <div>
+                <div class="emoji">🧪</div>
+                <h1 class="cover-title">Tipos de Testing en Ingeniería de Software</h1>
+                <p class="cover-subtitle">Una guía completa de los tipos de pruebas</p>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter" id="slideCounter">1 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Introducción -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">📚</span> Introducción a los Tipos de Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>¿Qué son los Tipos de Testing?</strong></p>
+                    <p style="margin-top: 10px;">Diferentes enfoques y técnicas para verificar la calidad del software, cada uno con objetivos específicos y momentos de aplicación en el ciclo de desarrollo.</p>
+                </div>
+
+                <div class="intro-grid">
+                    <div class="type-list">
+                        <h3>🔧 Pruebas Funcionales</h3>
+                        <ul style="font-size: 0.95rem;">
+                            <li>Functional Testing</li>
+                            <li>Unit Testing</li>
+                            <li>Integration Testing</li>
+                            <li>System Testing</li>
+                            <li>User Acceptance Testing</li>
+                            <li>Regression Testing</li>
+                        </ul>
+                    </div>
+                    <div class="type-list">
+                        <h3>⚡ Pruebas No Funcionales</h3>
+                        <ul style="font-size: 0.95rem;">
+                            <li>Performance Testing</li>
+                            <li>Load Testing</li>
+                            <li>Stress Testing</li>
+                            <li>Security Testing</li>
+                            <li>Usability Testing</li>
+                            <li>Compatibility Testing</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="definition" style="margin-top: 15px;">
+                    <p><strong>💡 Importancia:</strong> Combinar diferentes tipos de testing asegura cobertura completa: funcionalidad correcta, buen rendimiento, seguridad robusta y excelente experiencia de usuario.</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">2 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Functional Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">⚙️</span> Functional Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Verifica que el software hace lo que debe hacer según los requisitos especificados.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Validar cumplimiento de requisitos funcionales y lógica de negocio.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Prueba funcionalidad contra requisitos</li>
+                            <li>Enfoque externo (caja negra)</li>
+                            <li>Verifica lógica de negocio</li>
+                            <li>Independiente de implementación</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>📌 Ejemplos de Uso</h3>
+                        <ul>
+                            <li>Validación de login</li>
+                            <li>Procesamiento de pagos</li>
+                            <li>Funcionalidad de búsqueda</li>
+                            <li>Flujos de navegación</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔧 Herramientas</h3>
+                    <p>Selenium, TestNG, Cypress, QTP, Katalon Studio</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">3 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Load Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">📊</span> Load Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Evalúa el rendimiento del sistema bajo condiciones de carga normal y esperada.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Determinar la máxima capacidad operativa y medir tiempos de respuesta bajo carga.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Simula múltiples usuarios concurrentes</li>
+                            <li>Mide tiempo de respuesta del sistema</li>
+                            <li>Identifica cuellos de botella</li>
+                            <li>Valida escalabilidad</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>📅 Cuándo Usar</h3>
+                        <ul>
+                            <li>Antes del lanzamiento a producción</li>
+                            <li>Después de actualizaciones mayores</li>
+                            <li>Planificación de capacidad</li>
+                            <li>Validación de SLA</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔧 Herramientas</h3>
+                    <p>Apache JMeter, k6, LoadRunner, Gatling, Artillery</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">4 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Performance Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">⚡</span> Performance Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Evalúa el rendimiento, velocidad, estabilidad y escalabilidad del software bajo diferentes condiciones.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Asegurar que el sistema cumple con los requisitos de rendimiento establecidos.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>🔄 Tipos Incluidos</h3>
+                        <ul>
+                            <li>Load Testing - Carga normal</li>
+                            <li>Stress Testing - Carga extrema</li>
+                            <li>Endurance Testing - Largo plazo</li>
+                            <li>Spike Testing - Picos repentinos</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Mide tiempo de respuesta</li>
+                            <li>Evalúa uso de recursos (CPU, RAM)</li>
+                            <li>Identifica cuellos de botella</li>
+                            <li>Valida escalabilidad horizontal</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔧 Herramientas</h3>
+                    <p>JMeter, LoadRunner, Gatling, WebLOAD, BlazeMeter</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">5 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Security Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">🔒</span> Security Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Identifica vulnerabilidades, amenazas y riesgos de seguridad en el software.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Prevenir acceso no autorizado y proteger datos sensibles de usuarios y sistema.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Busca vulnerabilidades conocidas</li>
+                            <li>Evalúa autenticación y autorización</li>
+                            <li>Simula ataques comunes</li>
+                            <li>Verifica cifrado de datos</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>🔄 Tipos de Pruebas</h3>
+                        <ul>
+                            <li>Penetration Testing (Pentesting)</li>
+                            <li>Vulnerability Scanning</li>
+                            <li>Fuzz Testing</li>
+                            <li>SQL Injection Testing</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔧 Herramientas</h3>
+                    <p>OWASP ZAP, Burp Suite, Nessus, Metasploit, Acunetix</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">6 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Integration Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">🔗</span> Integration Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Prueba la interacción y comunicación entre diferentes módulos o componentes del sistema.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Validar que los módulos trabajan correctamente juntos y que las interfaces funcionan adecuadamente.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Prueba interfaces entre módulos</li>
+                            <li>Detecta errores de integración</li>
+                            <li>Enfoque incremental</li>
+                            <li>Valida flujo de datos</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>🔄 Estrategias</h3>
+                        <ul>
+                            <li>Big-bang - Todo junto</li>
+                            <li>Top-down - De arriba hacia abajo</li>
+                            <li>Bottom-up - De abajo hacia arriba</li>
+                            <li>Hybrid - Combinación de enfoques</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔧 Herramientas</h3>
+                    <p>Postman, TestNG, SoapUI, REST Assured, Pact</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">7 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Unit Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">🧩</span> Unit Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Prueba de componentes o unidades individuales de código en completo aislamiento.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Verificar que cada unidad funciona correctamente de forma independiente.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Pruebas granulares y específicas</li>
+                            <li>Realizadas por desarrolladores</li>
+                            <li>Detección temprana de defectos</li>
+                            <li>Alta velocidad de ejecución</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>💰 Ventajas</h3>
+                        <ul>
+                            <li>Ahorra tiempo y dinero</li>
+                            <li>Facilita refactorización</li>
+                            <li>Documenta el código</li>
+                            <li>Base para CI/CD</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔧 Herramientas</h3>
+                    <p>JUnit (Java), PyTest (Python), NUnit (.NET), Jest (JavaScript), RSpec (Ruby)</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">8 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: System Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">🖥️</span> System Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Prueba del sistema completo e integrado para validar que cumple con los requisitos especificados.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Validar que el sistema completo funciona correctamente como un todo integrado.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Pruebas end-to-end completas</li>
+                            <li>Ambiente similar a producción</li>
+                            <li>Valida requisitos funcionales y no-funcionales</li>
+                            <li>Ejecutado por equipo de QA</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>📅 Cuándo Usar</h3>
+                        <ul>
+                            <li>Después de Integration Testing</li>
+                            <li>Antes de UAT</li>
+                            <li>En ambiente de staging</li>
+                            <li>Previo a release</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔧 Herramientas</h3>
+                    <p>Cypress, Selenium, TestComplete, Ranorex, Robot Framework</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">9 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: User Acceptance Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">👥</span> User Acceptance Testing (UAT)</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Validación del sistema realizada por usuarios finales para asegurar que cumple con sus necesidades.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Asegurar que el sistema cumple las necesidades del usuario y está listo para producción.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Ejecutado por usuarios finales reales</li>
+                            <li>Validación de requisitos de negocio</li>
+                            <li>Incluye Alpha y Beta testing</li>
+                            <li>Perspectiva del usuario final</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>🔄 Tipos</h3>
+                        <ul>
+                            <li>UAT - User Acceptance Testing</li>
+                            <li>BAT - Business Acceptance Testing</li>
+                            <li>Alpha Testing - Interno</li>
+                            <li>Beta Testing - Externo</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="definition" style="background: rgba(249, 115, 22, 0.15); border-left-color: var(--color-accent);">
+                    <p><strong>⚠️ Importante:</strong> UAT es la última puerta antes de producción. Sin aprobación de UAT, el software NO debe liberarse.</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">10 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Non-Functional Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">📐</span> Non-Functional Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Prueba aspectos de calidad no relacionados con funcionalidades específicas sino con "qué tan bien" funciona el sistema.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Evaluar atributos de calidad como rendimiento, usabilidad, seguridad y confiabilidad.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Responde "¿Funciona bien?"</li>
+                            <li>Mide atributos de calidad</li>
+                            <li>Complementa testing funcional</li>
+                            <li>Crítico para experiencia del usuario</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>🔄 Tipos Incluidos</h3>
+                        <ul>
+                            <li>Performance Testing</li>
+                            <li>Security Testing</li>
+                            <li>Usability Testing</li>
+                            <li>Compatibility Testing</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="definition" style="background: rgba(16, 185, 129, 0.15); border-left-color: var(--color-success);">
+                    <p><strong>💡 Diferencia:</strong> Funcional = "¿Hace lo correcto?" | No-Funcional = "¿Lo hace bien?"</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">11 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: API Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">🔌</span> API Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Prueba de Application Programming Interfaces para validar funcionalidad, confiabilidad, rendimiento y seguridad.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Validar que las APIs funcionan correctamente, manejan datos adecuadamente y responden según especificaciones.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Prueba endpoints de API</li>
+                            <li>Valida datos de entrada/salida</li>
+                            <li>Verifica códigos de estado HTTP</li>
+                            <li>Esencial para microservicios</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>🔄 Tipos de Pruebas API</h3>
+                        <ul>
+                            <li>Functional Testing</li>
+                            <li>Integration Testing</li>
+                            <li>Performance Testing</li>
+                            <li>Security Testing</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔧 Herramientas</h3>
+                    <p>Postman, REST Assured, SoapUI, Insomnia, Karate DSL</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">12 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: A/B Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">🔀</span> A/B Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Compara dos versiones (A y B) de una funcionalidad para determinar cuál es más efectiva.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Tomar decisiones basadas en datos para optimizar funcionalidades y mejorar conversión.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Pruebas comparativas controladas</li>
+                            <li>Basada en datos y métricas</li>
+                            <li>Mejora experiencia del usuario</li>
+                            <li>Validación estadística de resultados</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>📊 Uso Común</h3>
+                        <ul>
+                            <li>Optimizar diseño de UI</li>
+                            <li>Mejorar tasas de conversión</li>
+                            <li>Validar cambios de producto</li>
+                            <li>Experimentación continua</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔧 Herramientas</h3>
+                    <p>Optimizely, Google Optimize, VWO, Adobe Target, Split.io</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">13 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Globalization Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">🌍</span> Globalization Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Verifica que el software funciona correctamente en múltiples regiones, idiomas y configuraciones culturales.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Asegurar compatibilidad global y correcta localización para diferentes mercados.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Prueba múltiples idiomas</li>
+                            <li>Valida formatos (moneda, fecha, hora)</li>
+                            <li>Prueba codificación de caracteres (UTF-8)</li>
+                            <li>Verifica adaptación cultural</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>🌐 Aspectos Clave</h3>
+                        <ul>
+                            <li>Internacionalización (i18n)</li>
+                            <li>Localización (l10n)</li>
+                            <li>Zonas horarias</li>
+                            <li>Direccionalidad de texto (RTL/LTR)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="definition" style="background: rgba(16, 185, 129, 0.15); border-left-color: var(--color-success);">
+                    <p><strong>📌 Importante para:</strong> Aplicaciones multinacionales, e-commerce global, SaaS internacional</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">14 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Compliance Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">⚖️</span> Compliance Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Verifica que el software cumple con estándares, regulaciones y requisitos legales aplicables.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Asegurar conformidad legal y evitar sanciones por incumplimiento normativo.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Valida requisitos regulatorios</li>
+                            <li>Prueba políticas de privacidad</li>
+                            <li>Verifica auditabilidad</li>
+                            <li>Documenta evidencia de cumplimiento</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>📋 Estándares Comunes</h3>
+                        <ul>
+                            <li>GDPR - Protección de datos (EU)</li>
+                            <li>HIPAA - Salud (USA)</li>
+                            <li>SOC2 - Seguridad de datos</li>
+                            <li>PCI-DSS - Pagos con tarjeta</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="definition" style="background: rgba(239, 68, 68, 0.15); border-left-color: var(--color-error);">
+                    <p><strong>⚠️ Crítico para:</strong> Sectores regulados (finanzas, salud, gobierno), procesamiento de pagos, manejo de datos personales</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">15 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 16: Exploratory Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">🔍</span> Exploratory Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Pruebas realizadas sin guión predeterminado, donde el tester aprende, diseña y ejecuta pruebas simultáneamente.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Descubrir defectos inesperados que las pruebas formales pueden no detectar.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Enfoque libre y creativo</li>
+                            <li>Encuentra "unknown unknowns"</li>
+                            <li>Desarrolla intuición del tester</li>
+                            <li>Aprendizaje continuo del sistema</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>💡 Ventajas</h3>
+                        <ul>
+                            <li>Descubre bugs inesperados</li>
+                            <li>Complementa testing automatizado</li>
+                            <li>Valida usabilidad real</li>
+                            <li>Flexible y adaptable</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="definition" style="background: rgba(16, 185, 129, 0.15); border-left-color: var(--color-success);">
+                    <p><strong>📌 Mejor para:</strong> UI/UX testing, validación de flujos complejos, nuevas funcionalidades, interacciones inesperadas</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">16 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 17: Automation Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">🤖</span> Automation Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Uso de herramientas y scripts para ejecutar pruebas automáticamente sin intervención manual.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Aumentar velocidad, cobertura y consistencia de las pruebas, reduciendo esfuerzo manual.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Repetible y consistente</li>
+                            <li>Rápido para ejecuciones múltiples</li>
+                            <li>Económico a largo plazo</li>
+                            <li>Ideal para regression testing</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>✅ Ventajas</h3>
+                        <ul>
+                            <li>Escalabilidad de pruebas</li>
+                            <li>Mayor precisión (sin error humano)</li>
+                            <li>Integración con CI/CD</li>
+                            <li>Feedback rápido a desarrolladores</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔧 Herramientas</h3>
+                    <p>Selenium, Cypress, Playwright, TestNG, Robot Framework, Appium</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">17 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 18: Regression Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">🔄</span> Regression Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Verifica que cambios en el código (fixes, nuevas features, refactorización) no rompan funcionalidad existente.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Asegurar estabilidad del sistema después de modificaciones, manteniendo funcionalidad previa intacta.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Re-ejecuta pruebas existentes</li>
+                            <li>Valida todo el sistema</li>
+                            <li>Crítico para mantenimiento</li>
+                            <li>Altamente automatizable</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>📅 Cuándo Usar</h3>
+                        <ul>
+                            <li>Después de bug fixes</li>
+                            <li>Tras nuevas features</li>
+                            <li>Después de updates de dependencias</li>
+                            <li>En cada release</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="definition" style="background: rgba(249, 115, 22, 0.15); border-left-color: var(--color-accent);">
+                    <p><strong>💡 Importancia:</strong> Sin regression testing, cada cambio es un riesgo. Es fundamental en desarrollo ágil y CI/CD.</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">18 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 19: Usability Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">👤</span> Usability Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Evalúa la facilidad de uso del software desde la perspectiva del usuario final.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Asegurar que los usuarios pueden usar el sistema fácilmente, de manera eficiente y satisfactoria.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Enfoque en experiencia del usuario</li>
+                            <li>Pruebas de navegación e interacción</li>
+                            <li>Evaluación de interfaz (UI/UX)</li>
+                            <li>Usuarios reales en escenarios reales</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>📊 Valida</h3>
+                        <ul>
+                            <li>Claridad de la interfaz</li>
+                            <li>Accesibilidad (WCAG)</li>
+                            <li>Intuitividad de navegación</li>
+                            <li>Satisfacción del usuario</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔧 Herramientas</h3>
+                    <p>UserTesting, Maze, Hotjar, Userlytics, Optimal Workshop</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">19 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 20: Compatibility Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">💻</span> Compatibility Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Verifica que el software funciona correctamente en diferentes ambientes, plataformas y configuraciones.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Asegurar compatibilidad multiplataforma y funcionamiento consistente en diversos entornos.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Prueba múltiples navegadores</li>
+                            <li>Diferentes sistemas operativos</li>
+                            <li>Diversos dispositivos (móvil, tablet, desktop)</li>
+                            <li>Diferentes versiones de software</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>🔍 Tipos</h3>
+                        <ul>
+                            <li>Browser Compatibility</li>
+                            <li>OS Compatibility</li>
+                            <li>Device Compatibility</li>
+                            <li>Network Compatibility</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔧 Herramientas</h3>
+                    <p>BrowserStack, LambdaTest, Sauce Labs, CrossBrowserTesting</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">20 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 21: Stress Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">💥</span> Stress Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Prueba el sistema bajo condiciones extremas para determinar su punto de quiebre.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Identificar el límite máximo del sistema y evaluar cómo se recupera de fallos.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Volumen extremo de datos/usuarios</li>
+                            <li>Condiciones anormales y adversas</li>
+                            <li>Evalúa recuperación del sistema</li>
+                            <li>Identifica límites de escalabilidad</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>⚡ Diferencia con Load Testing</h3>
+                        <ul>
+                            <li><strong>Load:</strong> Carga NORMAL esperada</li>
+                            <li><strong>Stress:</strong> Carga EXTREMA anormal</li>
+                            <li>Load valida capacidad</li>
+                            <li>Stress busca punto de quiebre</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🔧 Herramientas</h3>
+                    <p>JMeter, Gatling, LoadRunner, K6, Locust</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">21 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 22: Recovery Testing -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title"><span class="emoji">🔧</span> Recovery Testing</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition">
+                    <p><strong>Definición:</strong> Verifica que el sistema puede recuperarse correctamente de fallos, crashes y desastres.</p>
+                </div>
+
+                <h3>🎯 Objetivo</h3>
+                <p>Asegurar continuidad del negocio y capacidad de recuperación ante fallos críticos.</p>
+
+                <div class="grid-2">
+                    <div>
+                        <h3>✨ Características</h3>
+                        <ul>
+                            <li>Simula fallos del sistema</li>
+                            <li>Evalúa procedimientos de recuperación</li>
+                            <li>Valida backup y restore</li>
+                            <li>Prueba redundancia y failover</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>🔍 Ejemplos de Pruebas</h3>
+                        <ul>
+                            <li>Caída de servidor</li>
+                            <li>Pérdida de conexión a BD</li>
+                            <li>Corrupción de datos</li>
+                            <li>Fallo de red</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="definition" style="background: rgba(239, 68, 68, 0.15); border-left-color: var(--color-error);">
+                    <p><strong>⚠️ Crítico para:</strong> Aplicaciones de misión crítica, servicios financieros, sistemas de salud, servidores de producción</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">22 / 22</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 23: Resumen y Conclusión -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title" style="text-align: center;"><span class="emoji">📝</span> Resumen y Conclusión</h2>
+            </div>
+            <div class="slide-content">
+                <div class="definition" style="text-align: center; padding: 20px;">
+                    <h3 style="font-size: 1.4rem; margin-bottom: 15px;">🎯 Tipos de Testing Cubiertos</h3>
+                    <p style="font-size: 1.05rem;">Hemos explorado 20 tipos diferentes de testing, cada uno con propósitos específicos</p>
+                </div>
+
+                <div class="summary-grid">
+                    <div class="summary-card"><strong>Functional</strong>¿Hace lo correcto?</div>
+                    <div class="summary-card"><strong>Load</strong>Carga normal</div>
+                    <div class="summary-card"><strong>Performance</strong>Velocidad y estabilidad</div>
+                    <div class="summary-card"><strong>Security</strong>Protección de datos</div>
+                    <div class="summary-card"><strong>Integration</strong>Módulos juntos</div>
+                    <div class="summary-card"><strong>Unit</strong>Componentes aislados</div>
+                    <div class="summary-card"><strong>System</strong>End-to-end completo</div>
+                    <div class="summary-card"><strong>UAT</strong>Validación de usuario</div>
+                    <div class="summary-card"><strong>Non-Functional</strong>¿Funciona bien?</div>
+                    <div class="summary-card"><strong>API</strong>Interfaces de programación</div>
+                    <div class="summary-card"><strong>A/B</strong>Comparación de versiones</div>
+                    <div class="summary-card"><strong>Globalization</strong>Multi-región</div>
+                    <div class="summary-card"><strong>Compliance</strong>Cumplimiento legal</div>
+                    <div class="summary-card"><strong>Exploratory</strong>Sin guión previo</div>
+                    <div class="summary-card"><strong>Automation</strong>Pruebas automáticas</div>
+                    <div class="summary-card"><strong>Regression</strong>Estabilidad post-cambios</div>
+                    <div class="summary-card"><strong>Usability</strong>Facilidad de uso</div>
+                    <div class="summary-card"><strong>Compatibility</strong>Multi-plataforma</div>
+                    <div class="summary-card"><strong>Stress</strong>Condiciones extremas</div>
+                    <div class="summary-card"><strong>Recovery</strong>Recuperación de fallos</div>
+                </div>
+
+                <div class="definition" style="background: rgba(249, 115, 22, 0.15); border-left-color: var(--color-accent); margin-top: 20px; padding: 20px; text-align: center;">
+                    <p style="font-size: 1.2rem; font-weight: 700; color: var(--color-accent);">"El testing no es un lujo, es una necesidad"</p>
+                    <p style="margin-top: 12px; font-size: 1.05rem;">La combinación estratégica de múltiples tipos de testing asegura software de calidad, seguro y confiable</p>
+                </div>
+
+                <p style="text-align: center; margin-top: 25px; font-size: 1.3rem; color: var(--color-primary);">¡Gracias! 🚀</p>
+            </div>
+            <div class="slide-footer">
+                <div class="navigation">
+                    <button class="nav-btn" onclick="prevSlide()">← Anterior</button>
+                    <button class="nav-btn" onclick="goHome()" style="background: var(--color-accent);">🏠 Inicio</button>
+                    <span class="slide-counter">23 / 23</span>
+                    <button class="nav-btn" onclick="nextSlide()">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        const progressBar = document.getElementById('progressBar');
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            
+            if (n >= totalSlides) {
+                currentSlide = totalSlides - 1;
+            } else if (n < 0) {
+                currentSlide = 0;
+            } else {
+                currentSlide = n;
+            }
+            
+            slides[currentSlide].classList.add('active');
+            
+            const allCounters = document.querySelectorAll('.slide-counter');
+            allCounters.forEach((counter, index) => {
+                counter.textContent = `${index + 1} / ${totalSlides}`;
+            });
+            
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            progressBar.style.width = progress + '%';
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        function goHome() {
+            showSlide(0);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            } else if (e.key === 'Home') {
+                goHome();
+            }
+        });
+
+        showSlide(0);
+    </script>
+</body>
+</html>
